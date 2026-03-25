@@ -1,0 +1,61 @@
+Sub ConvertAllLatexUnified()
+    Dim regEx As Object
+    Dim docRange As Range
+    Dim matches As Object
+    Dim i As Long
+    Dim formulaText As String
+    Dim countDisplay As Long, countInline As Long
+
+    ' 初始化正則表達式物件
+    Set regEx = CreateObject("VBScript.RegExp")
+    regEx.Global = True
+    regEx.IgnoreCase = False
+    
+    Application.ScreenUpdating = False ' 關閉螢幕更新加速執行
+
+    ' --- 第一階段：處理雙 $$ (置中/多行公式) ---
+    regEx.Pattern = "\$\$\s*([\s\S]*?)\s*\$\$"
+    Set matches = regEx.Execute(ActiveDocument.Content.Text)
+    countDisplay = matches.Count
+    
+    For i = countDisplay - 1 To 0 Step -1
+        Dim mDisplay As Object
+        Set mDisplay = matches.Item(i)
+        formulaText = mDisplay.SubMatches(0)
+        Set docRange = ActiveDocument.Range(mDisplay.FirstIndex, mDisplay.FirstIndex + mDisplay.Length)
+        
+        docRange.Delete
+        docRange.Text = formulaText
+        ActiveDocument.OMaths.Add docRange
+        docRange.OMaths(1).BuildUp
+    Next i
+
+    ' --- 第二階段：處理單 $ (行內公式) ---
+    ' 重新讀取文件內容以更新文字索引位置
+    regEx.Pattern = "\$([^\$]+)\$"
+    Set matches = regEx.Execute(ActiveDocument.Content.Text)
+    countInline = matches.Count
+    
+    For i = countInline - 1 To 0 Step -1
+        Dim mInline As Object
+        Set mInline = matches.Item(i)
+        formulaText = mInline.SubMatches(0)
+        Set docRange = ActiveDocument.Range(mInline.FirstIndex, mInline.FirstIndex + mInline.Length)
+        
+        docRange.Delete
+        docRange.Text = formulaText
+        ActiveDocument.OMaths.Add docRange
+        docRange.OMaths(1).BuildUp
+    Next i
+
+    Application.ScreenUpdating = True
+    
+    ' 顯示執行結果
+    If countDisplay + countInline > 0 Then
+        MsgBox "轉換完成！" & vbCrLf & _
+               "置中公式 ($$): " & countDisplay & " 個" & vbCrLf & _
+               "行內公式 ($): " & countInline & " 個", vbInformation
+    Else
+        MsgBox "文件中未發現任何 $ 或 $$ 格式的公式。", vbExclamation
+    End If
+End Sub

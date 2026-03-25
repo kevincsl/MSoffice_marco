@@ -1,0 +1,7 @@
+「這是一個自動化數學工具。請將檔案放入 
+%AppData%\Microsoft\Word\Startup 資料夾，
+重啟 Word 後，上方工具列會出現一個 『一鍵 LaTeX 轉換』 按鈕。
+
+
+注意： 如果點了沒反應，請先手動插入一個方程式（Alt + =），
+並確認上方選單的 『LaTeX』 模式是開啟的（不是 UnicodeMath）。」
